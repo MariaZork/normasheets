@@ -1,0 +1,101 @@
+number: 8
+title: 'CUDA:'
+accent: 'the #2 Solver on a GPU'
+subtitle: One thread per cell, one kernel per projection step, and why bandwidth, not FLOPs, sets the speed
+
+rows:
+  - cols: [0.78, 1.22]
+    cards:
+      - title: Grid → threads
+        blocks:
+          - figure: cuda_grid
+          - text: 'Block 32×8 is a solid default. A warp reads 32 neighbours in a row: **coalesced**. Index c = j·nx + i.'
+            mt: 2
+      - title: One time step = 5 kernels
+        aside: 'projection method from #2'
+        dot: amber
+        blocks:
+          - figure: cuda_pipeline
+
+  - cols: [1.24, 0.76]
+    cards:
+      - title: Kernel 1 · predictor on the MAC grid
+        dot: cyan
+        blocks:
+          - code:
+              lang: cuda
+              font: 11
+              src: |
+                __global__ void predict_u(const float* u, const float* v,
+                                          float* us, int nx, int ny,
+                                          float dt, float h, float nu) {
+                  int i = blockIdx.x*blockDim.x + threadIdx.x;   // x-face
+                  int j = blockIdx.y*blockDim.y + threadIdx.y;   // cell row
+                  if (i < 1 || i >= nx || j < 1 || j >= ny-1) return;
+                  int W = nx + 1, c = j*W + i, r = j*nx;         // u: (nx+1) x ny
+                  float lap = (u[c+1] + u[c-1] + u[c+W] + u[c-W] - 4.f*u[c])/(h*h);
+                  float vb  = 0.25f*(v[r+i-1] + v[r+i] + v[r+nx+i-1] + v[r+nx+i]);
+                  float adv = u[c]*(u[c+1]-u[c-1])/(2*h) + vb*(u[c+W]-u[c-W])/(2*h);
+                  us[c] = u[c] + dt*(nu*lap - adv);
+                }
+          - text: 'Same formula as #2. v̄ averages the 4 v-faces around the u-face. The v-predictor mirrors it.'
+      - title: Kernel 2 · Jacobi sweep
+        dot: amber
+        blocks:
+          - code:
+              lang: cuda
+              font: 10.6
+              src: |
+                __global__ void jacobi(const float* p,
+                    float* pn, const float* b,
+                    int nx, int ny, float h2) {
+                  int i = blockIdx.x*blockDim.x + threadIdx.x;
+                  int j = blockIdx.y*blockDim.y + threadIdx.y;
+                  if (i<1||i>=nx-1||j<1||j>=ny-1) return;
+                  int c = j*nx + i;
+                  pn[c] = 0.25f*(p[c-1] + p[c+1] + p[c-nx]
+                               + p[c+nx] - h2*b[c]);
+                }
+                // host loop, ping-pong buffers
+                dim3 blk(32,8), grd((nx+31)/32,(ny+7)/8);
+                for (int k = 0; k < iters; ++k) {
+                  jacobi<<<grd,blk>>>(p,pn,b,nx,ny,h*h);
+                  std::swap(p, pn);
+                }
+
+  - cols: [1, 1]
+    cards:
+      - title: Memory-bound
+        aside: estimate first
+        dot: rose
+        math_size: 0.94
+        blocks:
+          - math: '\text{updates/s} \approx \frac{\text{bandwidth}}{\text{bytes per update}},\qquad \text{Jacobi fp32: } \frac{2\ \text{TB/s}}{12\ \text{B}} \approx 1.7\cdot10^{11}'
+          - text: 'Read p and b, write pn: ~12 B for ~6 FLOPs, i.e. 0.5 FLOP/B, far left on the roofline. Measure achieved GB/s with Nsight Compute, not GFLOP/s.'
+            mt: 0
+          - table:
+              compact: true
+              head: [Poisson solver, Iterations, Use when]
+              widths: [31%, 21%]
+              rows:
+                - [Jacobi, '~N² (slow)', 'teaching, smoke tests']
+                - [Red-black SOR, '~N', 'in place, simple, 2D']
+                - [Multigrid / AmgX, 'O(1) cycles', 'production, any BCs']
+                - [cuFFT, direct, 'periodic box: p̂ = −b̂ / |k|²']
+            mt: 6
+      - title: Checklist
+        dot: green
+        blocks:
+          - checklist:
+              - '**Keep data on the device.** No cudaMemcpy inside the time loop'
+              - '**Coalesce:** i on threadIdx.x, pad rows to 128 B'
+              - '**Shared-memory tiles** with a 1-cell halo cut repeated neighbour loads'
+              - '**Red-black ordering** updates in place, ~2× faster convergence than Jacobi'
+              - '**Check residuals every k sweeps:** reductions force a sync'
+              - '**CUDA Graphs** remove launch overhead of thousands of small kernels'
+              - '**Mixed precision:** fp32 fields, fp64 residuals in the pressure solve'
+              - '**Multi-GPU:** slab decomposition, halo exchange via NCCL, overlap with interior work'
+              - '**Python first:** the #2 NumPy loop runs on GPU with CuPy, then port hot kernels'
+
+footer:
+  left: 'Refs: CUDA C++ Best Practices Guide · Williams et al. 2009 (Roofline) · AmgX · cuFFT'

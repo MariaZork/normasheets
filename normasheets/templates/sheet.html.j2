@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>{{ sheet.title }} {{ sheet.accent }}</title>
+<link rel="stylesheet" href="{{ assets }}/katex/katex.min.css">
+<style>
+{{ theme_css }}
+:root{ --W:{{ size.width }}px; --H:{{ size.height }}px; {% for k, v in palette.items() %}--{{ k }}:{{ v }}; {% endfor %}}
+@page{ size:{{ size.width }}px {{ size.height }}px; }
+{{ extra_css }}
+</style></head>
+<body>
+<div class="grid-bg"></div>
+<header{% if sheet.header_gap is not none %} style="margin-bottom:{{ sheet.header_gap }}px"{% endif %}>
+  <div class="topline">
+    <div class="kl">{% if logo %}<img class="logo" src="{{ logo }}" alt="">{% endif %}{% if sheet.number is not none %}<span class="num">#{{ sheet.number }}</span>{% endif %}<div class="kicker">{{ kicker }}</div></div>
+    {% if byline %}<div class="byline">{{ byline }}</div>{% endif %}
+  </div>
+  <h1>{{ title }}{% if accent %} <span>{{ accent }}</span>{% endif %}</h1>
+  {% if subtitle %}<div class="sub">{{ subtitle }}</div>{% endif %}
+</header>
+{{ body }}
+<footer><span>{{ footer_left }}</span><span class="fr">{% if footer_right %}<span>{{ footer_right }}</span>{% endif %}{% if credit %}<span class="credit"><img src="{{ assets }}/logo.svg" alt=""><span>{{ credit }}</span></span>{% endif %}</span></footer>
+<script src="{{ assets }}/katex/katex.min.js"></script>
+<script>
+window.__texErrors = [];
+document.querySelectorAll('.tex').forEach(function (el) {
+  var tex = el.textContent;
+  try {
+    katex.render(tex, el, {displayMode: el.dataset.display === 'true', throwOnError: true,
+                           strict: 'ignore', macros: {{ macros }}});
+  } catch (e) {
+    window.__texErrors.push({tex: tex, error: String(e.message || e)});
+    el.textContent = tex; el.style.color = '#ff4d4f';
+  }
+});
+document.fonts.ready.then(function () { window.__ready = true; });
+</script>
+</body></html>

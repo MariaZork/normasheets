@@ -1,0 +1,106 @@
+number: 6
+title: 'Finite Volume:'
+accent: SIMPLE, PISO, TVD
+subtitle: How OpenFOAM-style solvers conserve mass, couple pressure and velocity, and stay oscillation-free
+header_gap: 10
+
+rows:
+  - cols: [1.45, 1]
+    align: start
+    cards:
+      - title: Integral form
+        aside: Gauss theorem over each cell
+        math_size: 1.0
+        blocks:
+          - math:
+              - '\frac{d}{dt}\!\int_{V}\!\mathbf{u}\,dV + \oint_S (\mathbf{u}\otimes\mathbf{u})\cdot d\mathbf{S} = -\frac1\rho\oint_S p\,d\mathbf{S} + \nu\oint_S \nabla\mathbf{u}\cdot d\mathbf{S}'
+              - 'V_P\frac{d\mathbf{u}_P}{dt} + \sum_f \phi_f\,\mathbf{u}_f = -\frac1\rho\sum_f p_f\mathbf{S}_f + \nu\sum_f |\mathbf{S}_f|\,\frac{\mathbf{u}_N-\mathbf{u}_P}{|\mathbf{d}_{PN}|}'
+              - '\phi_f = \mathbf{S}_f\cdot\mathbf{u}_f,\qquad \sum_f \phi_f = 0'
+          - text: 'What leaves one cell enters its neighbour: **conservative by construction**, on any polyhedral mesh.'
+            mt: 0
+          - label: Gauss gradient & face interpolation
+            mt: 8
+          - math: '(\nabla\varphi)_P \approx \frac{1}{V_P}\sum_f \varphi_f\,\mathbf{S}_f,\qquad \varphi_f = w_f\,\varphi_P + (1-w_f)\,\varphi_N'
+          - text: 'Skewed or non-orthogonal meshes add explicit correction terms (OpenFOAM: **nNonOrthogonalCorrectors**).'
+            mt: 0
+      - title: Cell & face
+        dot: amber
+        blocks:
+          - figure: fv_cell
+          - text: 'Collocated: u and p both at P. Face flux φ_{f} through S_{f}.'
+
+  - title: Pressure–velocity coupling
+    aside: the core shared by SIMPLE and PISO
+    dot: cyan
+    math_size: 1.0
+    blocks:
+      - columns:
+          widths: [1, 1]
+          gap: 14
+          align: center
+          items:
+            - - math: 'a_P\mathbf{u}_P = \underbrace{\textstyle\sum_N a_N\mathbf{u}_N + \mathbf{b}}_{\mathbf{H}(\mathbf{u})} - \nabla p\;\;\Rightarrow\;\; \mathbf{u}_P = \frac{\mathbf{H}}{a_P} - \frac{1}{a_P}\nabla p'
+            - - math: '\nabla\!\cdot\!\Big(\frac{1}{a_P}\nabla p\Big) = \nabla\!\cdot\!\Big(\frac{\mathbf{H}}{a_P}\Big),\quad \phi_f = \Big(\frac{\mathbf{H}}{a_P}\Big)_{\!f}\!\cdot\mathbf{S}_f - \Big(\frac{1}{a_P}\Big)_{\!f}|\mathbf{S}_f|\,\partial_n p'
+      - text: 'Face flux uses the compact face gradient ∂_{n}p, not interpolated cell gradients: this is **Rhie–Chow** (1983), which kills the checkerboard on a collocated grid, the role the MAC grid played in #2.'
+        mt: 0
+
+  - cols: [1, 1]
+    cards:
+      - title: SIMPLE
+        aside: 'Patankar & Spalding 1972 · steady'
+        dot: '#2f9cc4'
+        blocks:
+          - steps:
+              color: '#2f9cc4'
+              items:
+                - '**Momentum predictor** with current p, under-relaxed: α_{U} ≈ 0.7'
+                - '**Pressure equation** above, solved once'
+                - '**Correct** fluxes φ and velocity: u = H/a_{P} − ∇p/a_{P}'
+                - '**Relax pressure:** p ← p\* + α_{p}(p − p\*), α_{p} ≈ 0.3'
+                - Turbulence equations, repeat until residuals fall
+          - code:
+              lang: cpp
+              font: 11.8
+              src: |
+                relaxationFactors                  // simpleFoam
+                { fields { p 0.3; }  equations { U 0.7; } }
+      - title: PISO / PIMPLE
+        aside: 'Issa 1986 · transient'
+        dot: '#c4566b'
+        blocks:
+          - steps:
+              color: '#c4566b'
+              items:
+                - '**Momentum predictor** once per time step, no relaxation'
+                - '**2+ pressure correctors** per step, each re-solves p and updates H'
+                - 'Accurate in time, but needs **Courant Co < 1**'
+                - '**PIMPLE** = SIMPLE outer loops around PISO: Co ≫ 1 allowed'
+          - code:
+              lang: cpp
+              font: 11.2
+              src: |
+                PIMPLE { nOuterCorrectors 2; nCorrectors 2; }  // pimpleFoam
+          - text: 'Chorin’s projection (#2) ≈ **one PISO corrector** with explicit momentum.'
+
+  - title: TVD convection schemes
+    aside: 'face value from upwind U, centre C, downwind D'
+    dot: green
+    math_size: 1.0
+    blocks:
+      - columns:
+          widths: [1, 300px]
+          gap: 16
+          items:
+            - - math: 'u_f = u_C + \tfrac12\,\psi(r)\,(u_D - u_C),\qquad r = \frac{u_C - u_U}{u_D - u_C}'
+              - text: '**Godunov:** no linear scheme is both monotone and 2nd order, so the limiter ψ(r) is nonlinear: ψ = 0 upwind, ψ = 1 central.'
+                mt: 0
+              - named_math:
+                  - {name: minmod, color: '#2f9cc4', tex: '\psi=\max\big(0,\min(1,r)\big)'}
+                  - {name: van Leer, color: '#c4566b', tex: '\psi=\frac{r+|r|}{1+|r|}'}
+                  - {name: superbee, color: '#c98428', tex: '\psi=\max\big(0,\min(2r,1),\min(r,2)\big)'}
+              - text: 'TVD: 0 ≤ ψ ≤ min(2r, 2); 2nd order: ψ(1) = 1. OpenFOAM: **limitedLinear**, **vanLeer**.'
+                mt: 2
+            - - figure: {name: sweby, caption: Sweby diagram (1984)}
+
+footer:
+  left: 'Refs: Patankar 1980 · Rhie & Chow 1983 · Issa 1986 · Sweby 1984 · Jasak 1996 · Moukalled 2016'

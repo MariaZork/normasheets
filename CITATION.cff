@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use NoRMA for teaching or research material, please cite it as below."
+title: "NoRMA: Notes Rendered as Math Artwork"
+abstract: "Turn YAML into LinkedIn-ready math cheat sheets with KaTeX formulas, highlighted code and SVG figures; exports 4:5 JPG and a PDF carousel with automatic layout checks."
+type: software
+authors:
+  - family-names: Zorkaltseva
+    given-names: Maria
+version: 0.1.0
+date-released: 2026-10-30
+license: MIT
+repository-code: "https://github.com/mariazork/normasheets"
+keywords: [cheat sheet, infographic, KaTeX, LaTeX, YAML, LinkedIn, PDF, scientific visualization]

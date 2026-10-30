@@ -1,0 +1,101 @@
+number: 2
+title: 'Navier–Stokes:'
+accent: Finite Differences
+subtitle: From PDE to code – discretize on a staggered grid, advance with the projection method
+
+rows:
+  - title: Difference operators
+    aside: 'uniform grid h = Δx = Δy, f_{i,j}^{n} = f(iΔx, jΔy, nΔt)'
+    blocks:
+      - columns:
+          widths: [1, 1]
+          gap: 22
+          align: center
+          items:
+            - - equation: {label: Time, sub: 'forward Euler, O(Δt)', label_width: 130,
+                           tex: '\partial_t f \approx \frac{f^{n+1}_{i,j}-f^{n}_{i,j}}{\Delta t}'}
+              - equation: {label: Convection, sub: 'upwind, O(h)', label_width: 130,
+                           tex: 'u\,\partial_x f \approx \begin{cases} u\,\frac{f_{i,j}-f_{i-1,j}}{\Delta x}, & u>0\\[2pt] u\,\frac{f_{i+1,j}-f_{i,j}}{\Delta x}, & u<0\end{cases}'}
+            - - equation: {label: 1st derivative, sub: 'central, O(h²)', label_width: 130,
+                           tex: '\partial_x f \approx \frac{f_{i+1,j}-f_{i-1,j}}{2\Delta x}'}
+              - equation: {label: Laplacian, sub: '5-point, O(h²)', label_width: 130,
+                           tex: '\Delta f \approx \frac{f_{i+1,j}+f_{i-1,j}+f_{i,j+1}+f_{i,j-1}-4f_{i,j}}{h^2}'}
+
+  - cols: [0.74, 1.26]
+    cards:
+      - title: MAC staggered grid
+        dot: amber
+        blocks:
+          - figure: {name: mac_grid}
+          - text: '**p** at centers, [[color: cyan | **u**]] on x-faces, [[color: rose | **v**]] on y-faces (Harlow–Welch, 1965). No pressure checkerboard; ∇·u = 0 exact per cell.'
+      - title: Discrete x-momentum
+        aside: explicit, 2D
+        dot: cyan
+        math_size: 1.12
+        blocks:
+          - math:
+              - 'u^{*}_{i,j} = u^n_{i,j} + \Delta t\,\Big[-\underbrace{\Big(u\,\tfrac{u_{i+1,j}-u_{i-1,j}}{2\Delta x} + \bar v\,\tfrac{u_{i,j+1}-u_{i,j-1}}{2\Delta y}\Big)}_{\color{#f2b45a}\text{convection}}'
+              - '+\;\nu\,\underbrace{\Big(\tfrac{u_{i+1,j}-2u_{i,j}+u_{i-1,j}}{\Delta x^2} + \tfrac{u_{i,j+1}-2u_{i,j}+u_{i,j-1}}{\Delta y^2}\Big)}_{\color{#5cc8e8}\text{diffusion}}\Big]^n'
+          - text: 'All terms at level n. **v̄** = v averaged from its 4 neighbouring y-faces to the u-face. The y-momentum for v is symmetric. Pressure is left out on purpose: it enters in the projection.'
+          - text: '**Stiff diffusion?** Treat νΔu with Crank–Nicolson, keep convection N(u) explicit – removes the h²/4ν limit, costs one Helmholtz solve per step:'
+            mt: 10
+          - math: '\Big(I-\tfrac{\nu\Delta t}{2}\Delta_h\Big)\mathbf{u}^{*}=\Big(I+\tfrac{\nu\Delta t}{2}\Delta_h\Big)\mathbf{u}^{n}-\Delta t\,N(\mathbf{u}^n)'
+            size: 0.92
+
+  - title: Projection method
+    aside: 'Chorin 1968 – one time step n → n+1'
+    dot: green
+    style: hero
+    blocks:
+      - tiles:
+          - title: Predict (ignore p)
+            color: cyan
+            blocks:
+              - math: '\mathbf{u}^{*} = \mathbf{u}^n + \Delta t\big[-(\mathbf{u}\cdot\nabla)\mathbf{u} + \nu\Delta\mathbf{u}\big]^n'
+              - text: 'u* is **not** divergence-free yet.'
+          - title: Solve pressure Poisson
+            color: amber
+            blocks:
+              - math: '\Delta_h p^{n+1}_{i,j} = \frac{\rho}{\Delta t}\Big(\tfrac{u^*_{i+\frac12,j}-u^*_{i-\frac12,j}}{\Delta x} + \tfrac{v^*_{i,j+\frac12}-v^*_{i,j-\frac12}}{\Delta y}\Big)'
+              - text: '~80–90% of runtime: solve Ap = b.'
+          - title: Project (correct)
+            color: rose
+            blocks:
+              - math: 'u^{n+1}_{i+\frac12,j} = u^*_{i+\frac12,j} - \frac{\Delta t}{\rho}\,\frac{p_{i+1,j}-p_{i,j}}{\Delta x}'
+              - text: 'Same for v → **∇_{h}·u^{n+1} = 0**.'
+      - text: '**Jacobi for step 2** (h = Δx = Δy, b = right-hand side): $p^{k+1}_{i,j}=\tfrac14\big(p^k_{i+1,j}+p^k_{i-1,j}+p^k_{i,j+1}+p^k_{i,j-1}-h^2 b_{i,j}\big)$ · faster: SOR, conjugate gradient, **multigrid O(N)**, FFT for periodic boxes.'
+        mt: 10
+
+  - cols: [0.95, 1.05]
+    cards:
+      - title: Stability & boundaries
+        dot: rose
+        blocks:
+          - math: '\Delta t \le C\,\frac{h}{|\mathbf{u}|_{\max}}\;\;(\text{CFL},\ C\!\approx\!0.5),\qquad \Delta t \le \frac{h^2}{4\nu}\;\;(2\text{D diffusion})'
+            size: 0.92
+          - bullets:
+              color: green
+              items:
+                - '**Cell Reynolds** Re_{h} = |u|h/ν ≤ 2 for central, else upwind / QUICK'
+                - '**No-slip wall:** u = 0; tangential via ghost cell u_{g} = 2U_{wall} − u_{in}'
+                - '**Pressure:** ∂p/∂n = 0 at walls; periodic → FFT'
+                - '**Validate:** lid-driven cavity vs Ghia et al. (1982)'
+      - title: Time loop
+        aside: NumPy sketch
+        dot: cyan
+        blocks:
+          - code:
+              lang: python
+              font: 12.6
+              src: |
+                for n in range(n_steps):
+                    dt = cfl * min(h / abs(u).max(), h*h / (4*nu))
+                    us = u + dt*(-advect(u, u, v) + nu*lap(u))  # 1
+                    vs = v + dt*(-advect(v, u, v) + nu*lap(v))
+                    p  = poisson(rho/dt * div(us, vs), p)       # 2
+                    u  = us - dt/rho * ddx(p)                   # 3
+                    v  = vs - dt/rho * ddy(p)
+                    apply_bc(u, v, p)                           # BCs
+
+footer:
+  left: 'Refs: Chorin (1968) · Harlow & Welch (1965) · Ghia, Ghia & Shin (1982)'

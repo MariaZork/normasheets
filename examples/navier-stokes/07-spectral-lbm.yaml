@@ -1,0 +1,85 @@
+number: 7
+title: Spectral
+accent: '& Lattice Boltzmann'
+subtitle: 'Two non-FD/FV routes: exact derivatives with FFT, and kinetic stream-and-collide that loves GPUs'
+
+rows:
+  - title: Pseudo-spectral solver
+    aside: 'periodic box [0, 2π]³, Orszag & Patterson 1972'
+    style: hero
+    math_size: 1.0
+    blocks:
+      - columns:
+          widths: [1.2, 1]
+          gap: 18
+          items:
+            - - math:
+                  - '\mathbf{u}(\mathbf{x}) = \sum_{\mathbf{k}}\hat{\mathbf{u}}_{\mathbf{k}}\,e^{i\mathbf{k}\cdot\mathbf{x}},\qquad \nabla \to i\mathbf{k},\qquad \Delta \to -|\mathbf{k}|^2'
+                  - '\partial_t\hat{\mathbf{u}} = \mathsf{P}(\mathbf{k})\,\widehat{(\mathbf{u}\times\boldsymbol{\omega})} - \nu|\mathbf{k}|^2\hat{\mathbf{u}},\qquad \mathsf{P}_{ij} = \delta_{ij} - \frac{k_ik_j}{|\mathbf{k}|^2}'
+              - text: 'The **Leray projector** P removes pressure and keeps k·û = 0 exactly. No Poisson solve.'
+                mt: 0
+              - bullets:
+                  - '**Pseudo:** products computed in physical space, O(N log N) via FFT, not O(N²) convolutions'
+                  - '**Integrating factor:** viscous term exact via e^{−ν|k|²Δt}, RK4 for the rest'
+                  - '**Exponential convergence** for smooth flows; the standard for DNS of isotropic turbulence'
+            - - label: '2/3 dealiasing rule · Orszag 1971'
+                mt: 0
+              - figure: dealias_23
+              - text: 'A product of modes |k| ≤ K reaches 2K and wraps around the grid. Keep only **|k| < N/3**: then products reach < 2N/3 and every alias lands in the band you zero anyway.'
+                mt: 0
+
+  - title: 2D vorticity RHS in NumPy
+    aside: '∂ₜω + u·∇ω = νΔω, then step with RK4'
+    dot: cyan
+    blocks:
+      - code:
+          lang: python
+          font: 11.6
+          src: |
+            kx, ky = np.meshgrid(fftfreq(N, 1/N), fftfreq(N, 1/N), indexing='ij')
+            k2 = kx**2 + ky**2;  k2[0, 0] = 1
+            keep = (abs(kx) < N/3) & (abs(ky) < N/3)       # 2/3 rule
+
+            def rhs(wh):                                # vorticity in Fourier space
+                ph = wh / k2                               # stream function
+                u, v   = ifft2(1j*ky*ph).real, ifft2(-1j*kx*ph).real
+                wx, wy = ifft2(1j*kx*wh).real, ifft2(1j*ky*wh).real
+                return -fft2(u*wx + v*wy) * keep - nu*k2*wh
+
+  - title: Lattice Boltzmann
+    aside: 'BGK collision, D2Q9 / D3Q19'
+    dot: amber
+    math_size: 1.0
+    blocks:
+      - columns:
+          widths: [1.35, 1]
+          gap: 18
+          items:
+            - - math:
+                  - 'f_i(\mathbf{x}+\mathbf{c}_i\Delta t,\,t+\Delta t) = f_i - \frac{1}{\tau}\big(f_i - f_i^{\text{eq}}\big)'
+                  - 'f_i^{\text{eq}} = w_i\rho\Big[1 + \frac{\mathbf{c}_i\!\cdot\mathbf{u}}{c_s^2} + \frac{(\mathbf{c}_i\!\cdot\mathbf{u})^2}{2c_s^4} - \frac{|\mathbf{u}|^2}{2c_s^2}\Big]'
+                  - '\rho=\sum_i f_i,\quad \rho\mathbf{u}=\sum_i \mathbf{c}_if_i,\quad \nu = c_s^2\big(\tau-\tfrac12\big)\Delta t,\quad c_s^2=\tfrac13'
+              - bullets:
+                  - '**Recovers Navier–Stokes** (Chapman–Enskog), error O(Ma²): Ma ≲ 0.1'
+                  - '**Stability:** τ → ½ means low ν, high Re; use MRT / TRT / cumulant collisions'
+                  - '**Walls:** bounce-back on a voxel mask, no meshing'
+            - - figure: d2q9
+              - text: Stream to neighbours, collide locally.
+                align: center
+                mt: 2
+
+  - title: Which route when
+    aside: 'GPU throughput: MLUPS ≈ memory bandwidth / (2 · Q · bytes per value)'
+    dot: green
+    blocks:
+      - table:
+          compact: true
+          head: [Method, Accuracy, Geometry, Parallel pattern, Sweet spot]
+          widths: [15%, 17%, 20%, 25%]
+          rows:
+            - [Pseudo-spectral, exponential, periodic boxes, 'global FFT, all-to-all', DNS of turbulence]
+            - [FD / FV, 2nd order typical, structured / any mesh, 'halo exchange, sparse Ap = b', engineering CFD]
+            - [LBM, 2nd order, 'any, voxelized', 'purely local, memory-bound', 'GPUs, porous media']
+
+footer:
+  left: 'Refs: Orszag 1971 · Orszag & Patterson 1972 · Canuto et al. 2006 · Krüger et al. 2017'

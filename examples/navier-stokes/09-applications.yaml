@@ -1,0 +1,107 @@
+number: 9
+title: Navier–Stokes
+accent: in the Wild
+subtitle: Where the equations run every day, which numbers set the regime, and what each field adds on top
+
+rows:
+  - title: Reynolds-number map
+    aside: 'Re = UL/ν, order of magnitude'
+    dot: amber
+    blocks:
+      - figure: reynolds_map
+
+  - cols: [1, 1, 1]
+    cards:
+      - title: Aero & automotive
+        blocks:
+          - chips: ['Re 10⁶–10⁸', 'Ma 0.1–0.85']
+          - bullets:
+              color: amber
+              items:
+                - '**Drag, lift, downforce**, noise: C_{D} = F_{D} / (½ρU²A)'
+                - '**RANS k-ω SST** for design loops, **LES / DES** for separation and acoustics (#4)'
+                - 'OpenFOAM, Fluent, STAR-CCM+, SU2'
+      - title: Weather & climate
+        blocks:
+          - chips: ['Ro = U/(fL) ≪ 1', 'Re > 10⁹']
+          - bullets:
+              color: amber
+              items:
+                - '**+ Coriolis** 2Ω×u and **+ buoyancy**; hydrostatic primitive equations'
+                - '**Parametrize** clouds and sub-grid turbulence'
+                - '**ML emulators** (GraphCast, FourCastNet) learn the time-stepper (#3)'
+      - title: Cardiovascular
+        aside: pulsatile
+        blocks:
+          - chips: ['Re ~ 10³ aorta', 'Wo = R√(ω/ν) ~ 10']
+          - bullets:
+              color: amber
+              items:
+                - '**Wall shear stress** flags aneurysm and plaque risk'
+                - '**Non-Newtonian** blood in small vessels (Carreau–Yasuda)'
+                - '**Fluid–structure** coupling for arteries and heart valves'
+      - title: Energy
+        aside: wind · combustion
+        blocks:
+          - chips: ['Re_{c} ~ 10⁶', 'Da = τ_{flow}/τ_{chem}']
+          - bullets:
+              color: amber
+              items:
+                - '**Wind farms:** actuator-line rotors + LES for wakes'
+                - '**Combustion:** reacting NS, species, stiff chemistry'
+                - '**Turbomachinery:** rotating frames, sliding meshes'
+      - title: Micro & process
+        blocks:
+          - chips: ['Re ≪ 1', 'Pe = UL/D ≫ 1']
+          - bullets:
+              color: amber
+              items:
+                - '**Lab-on-chip:** Stokes flow, no turbulence, mixing by diffusion only'
+                - '**Multiphase:** VOF / level set for droplets and bubbles'
+                - 'Stirred tanks, heat exchangers, pipelines'
+      - title: Graphics & VFX
+        aside: real time
+        blocks:
+          - chips: ['60 fps', 'stable > accurate']
+          - bullets:
+              color: amber
+              items:
+                - '**Stable Fluids** (Stam 1999) = the projection of #2 + semi-Lagrangian advection'
+                - 'Smoke, fire, water in films and games'
+                - '**FLIP / APIC** particle–grid hybrids for liquids'
+
+  - title: What each field adds to Navier–Stokes
+    dot: rose
+    blocks:
+      - table:
+          compact: true
+          head: [Physics, Extra term or equation, Where]
+          widths: [20%, 42%]
+          rows:
+            - [Buoyancy, '−βgΔT ẑ in momentum + heat equation (Boussinesq)', 'ventilation, oceans, mantle']
+            - [Rotation, '2Ω × u (Coriolis), centrifugal term', 'weather, turbomachinery']
+            - [Non-Newtonian, 'viscosity depends on shear rate (Carreau, power law)', 'blood, polymers, food']
+            - [Multiphase, '∂ₜα + u·∇α = 0, surface tension σκn δ_{s}', 'droplets, sloshing, ship wakes']
+            - [Reacting, 'species Y_{k} transport, heat release, variable ρ', 'engines, gas turbines']
+            - [MHD, 'Lorentz force J × B + induction equation', 'plasma, liquid metals, the Sun']
+            - [Fluid–structure, 'moving boundary, ALE mesh, coupled solid solver', 'valves, flutter, sails']
+
+  - title: Dimensionless numbers on this sheet
+    dot: green
+    blocks:
+      - kvgrid:
+          columns: 3
+          key_width: 132
+          items:
+            - ['Re = UL/ν', inertia / viscosity]
+            - ['Ma = U/c', flow / sound speed]
+            - ['Fr = U/√(gL)', inertia / gravity]
+            - ['St = fL/U', vortex shedding]
+            - ['Pr = ν/κ', momentum / heat]
+            - ['Pe = UL/D', advection / diffusion]
+            - ['Ro = U/(fL)', inertia / Coriolis]
+            - ['Wo = R√(ω/ν)', pulsation / viscosity]
+            - ['Da = τ_{flow}/τ_{chem}', flow time / reaction time]
+
+footer:
+  left: 'Values are typical orders of magnitude · Stam, SIGGRAPH 1999 · Lam et al., Science 2023 (GraphCast)'

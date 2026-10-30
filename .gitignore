@@ -1,0 +1,6 @@
+out/
+__pycache__/
+*.egg-info/
+build/
+dist/
+docs/assets/social/

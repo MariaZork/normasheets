@@ -1,0 +1,100 @@
+number: 4
+title: 'Navier–Stokes:'
+accent: Turbulence
+subtitle: The energy cascade, why DNS is out of reach, and how RANS / LES close the equations
+
+rows:
+  - title: Kolmogorov 1941
+    aside: energy spectrum and what each method resolves
+    style: hero
+    math_size: 1.02
+    blocks:
+      - columns:
+          widths: [1.45, 1]
+          gap: 18
+          items:
+            - - figure: kolmogorov_spectrum
+            - - text: '**Cascade:** energy injected at scale L, passed to ever smaller eddies at rate ε without loss, burned by viscosity at scale η.'
+                mt: 2
+              - math: 'E(k) = C_K\,\varepsilon^{2/3}k^{-5/3},\;\; C_K\!\approx\!1.5,\;\; \varepsilon\sim\tfrac{U^3}{L}'
+              - label: Kolmogorov scales
+              - math:
+                  - '\eta=\Big(\frac{\nu^3}{\varepsilon}\Big)^{1/4},\quad \tau_\eta=\Big(\frac{\nu}{\varepsilon}\Big)^{1/2}'
+                  - 'u_\eta=(\nu\varepsilon)^{1/4},\quad \frac{L}{\eta}\sim \mathrm{Re}^{3/4}'
+              - text: '**Why −5/3?** In the inertial range E(k) can depend only on ε [m²/s³] and k [1/m]. Dimensional analysis leaves one answer: $E\sim\varepsilon^{2/3}k^{-5/3}$.'
+                mt: 8
+
+  - cols: [1.25, 1]
+    cards:
+      - title: Reynolds averaging & closure
+        dot: cyan
+        math_size: 0.94
+        blocks:
+          - math:
+              - "u_i = \\bar u_i + u_i',\\qquad \\overline{u_i'} = 0"
+              - "\\partial_t\\bar u_i + \\bar u_j\\partial_j\\bar u_i = -\\tfrac1\\rho\\partial_i\\bar p + \\nu\\Delta\\bar u_i - \\underbrace{\\partial_j\\overline{u_i'u_j'}}_{\\color{#ef7a8a}\\text{Reynolds stress}}"
+          - text: 'Averaging the nonlinear (u·∇)u leaves **6 new unknowns** and no new equations – the **closure problem**. Boussinesq hypothesis:'
+            mt: 0
+          - math: "-\\overline{u_i'u_j'} = 2\\nu_t\\bar S_{ij} - \\tfrac23 k\\,\\delta_{ij},\\qquad k=\\tfrac12\\overline{u_i'u_i'}"
+      - title: Why DNS is out of reach
+        dot: rose
+        math_size: 0.94
+        blocks:
+          - math: 'N_{\text{grid}} \sim \Big(\frac{L}{\eta}\Big)^3 \sim \mathrm{Re}^{9/4},\qquad \text{work} \sim \mathrm{Re}^{3}'
+          - stats:
+              - {value: '10^{16}', unit: grid points, caption: 'airliner wing, Re ≈ 10⁷'}
+              - {value: '8×', unit: compute, caption: each time Re doubles}
+          - text: 'Time steps also grow as Re^{3/4}. Hence: model the small scales, or model everything but the mean.'
+
+  - title: DNS → LES → RANS
+    aside: 'boundary-layer grid points (Choi & Moin 2012) · WR / WM = wall-resolved / wall-modeled'
+    dot: amber
+    blocks:
+      - table:
+          compact: true
+          head: [Method, Resolves, Models, Grid pts, Typical use]
+          widths: [14%, 22%, 23%, 13%]
+          rows:
+            - ['[[swatch: #2f9cc4]]DNS', 'all scales down to η', nothing, 'Re^{37/14}', 'physics, ML training data']
+            - ['[[swatch: #c4566b]]WR-LES', 'large eddies, k < k_{c}', sub-grid scales, 'Re^{13/7}', 'separation, acoustics, combustion']
+            - ['[[swatch: #c4566b]]WM-LES', outer-layer eddies, SGS + near-wall layer, Re, high-Re external aero]
+            - ['[[swatch: #c98428]]RANS', mean flow only, all fluctuations, weak in Re, 'industrial design, steady flows']
+
+  - cols: [1, 1, 1]
+    cards:
+      - title: Smagorinsky
+        aside: LES 1963
+        dot: '#c4566b'
+        dense: true
+        math_size: 0.95
+        blocks:
+          - math:
+              - '\tau^{\text{sgs}}_{ij}-\tfrac13\tau_{kk}\delta_{ij} = -2\nu_{\text{sgs}}\bar S_{ij}'
+              - '\nu_{\text{sgs}} = (C_s\Delta)^2|\bar S|,\;\; |\bar S|=\sqrt{2\bar S_{ij}\bar S_{ij}}'
+          - text: 'C_{s} ≈ 0.1–0.2, Δ = filter width. Too dissipative at walls → **dynamic model** (Germano 1991).'
+      - title: k-ε
+        aside: RANS 1974
+        plain_title: true
+        dot: '#c98428'
+        dense: true
+        math_size: 0.95
+        blocks:
+          - math:
+              - '\nu_t = C_\mu\frac{k^2}{\varepsilon}'
+              - '\frac{Dk}{Dt} = P_k-\varepsilon+\nabla\!\cdot\!\Big[\big(\nu+\tfrac{\nu_t}{\sigma_k}\big)\nabla k\Big]'
+              - '\frac{D\varepsilon}{Dt} = \frac{\varepsilon}{k}\big(C_1P_k-C_2\varepsilon\big)+\nabla\!\cdot\!\Big[\big(\nu+\tfrac{\nu_t}{\sigma_\varepsilon}\big)\nabla \varepsilon\Big]'
+          - text: 'C_{μ} 0.09 · C₁ 1.44 · C₂ 1.92 · σ_{k} 1 · σ_{ε} 1.3. Weak at walls & separation.'
+      - title: k-ω SST
+        aside: RANS 1994
+        plain_title: true
+        dot: '#c98428'
+        dense: true
+        math_size: 0.95
+        blocks:
+          - math:
+              - '\omega = \frac{\varepsilon}{\beta^* k},\quad \beta^*=0.09'
+              - '\nu_t = \frac{a_1 k}{\max(a_1\omega,\; S F_2)},\quad a_1=0.31'
+          - text: 'F₁ blends **k-ω at walls** with **k-ε far away**; F₂ limiter helps separation. Aero default.'
+
+footer:
+  left: 'Refs: Kolmogorov 1941 · Smagorinsky 1963 · Launder 1974 · Menter 1994 · Choi & Moin 2012 · Pope 2000'

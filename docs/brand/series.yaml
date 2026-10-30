@@ -1,0 +1,11 @@
+# Builds the GitHub social preview (1280x640) with NoRMA itself:  normasheets build docs/brand --formats png
+series: NoRMA
+author: Maria Zorkaltseva
+kicker: "Notes Rendered as Math Artwork"
+byline: "github.com/mariazork/normasheets"
+logo: ../assets/logo.svg
+size: {width: 1280, height: 640, scale: 1}
+output: ../assets/social
+lint: {forbid: ["—"]}
+max_free_space: 400
+credit: false                  # the card already shows the repo URL

@@ -1,0 +1,90 @@
+number: 1
+title: Navier–Stokes
+accent: Equations
+subtitle: '3D incompressible flow – the equations, the key identities, and the \$1M Millennium Problem'
+header_gap: 8
+
+rows:
+  - title: The system
+    aside: 'unknowns u = (u₁, u₂, u₃), p on ℝ³ or 𝕋³'
+    style: hero
+    math_size: 1.6
+    blocks:
+      - equation:
+          label: Momentum equation
+          sub: "conservation of momentum\n3 equations: x, y, z"
+          tex: '\underbrace{\partial_t \mathbf{u}}_{\color{#8fa1bd}\text{local accel.}} + \underbrace{(\mathbf{u}\cdot\nabla)\mathbf{u}}_{\color{#f2b45a}\text{convection}} = \underbrace{-\tfrac{1}{\rho}\nabla p}_{\color{#8fa1bd}\text{pressure}} + \underbrace{\nu\,\Delta \mathbf{u}}_{\color{#5cc8e8}\text{viscosity}} + \underbrace{\mathbf{f}}_{\color{#8fa1bd}\text{force}}'
+      - boxes:
+          - {label: '**Continuity** · incompressibility', tex: '\nabla\cdot\mathbf{u} = 0'}
+          - {label: '**Initial condition**', tex: '\mathbf{u}(x,0)=\mathbf{u}_0(x)'}
+          - {label: '**Kinematic viscosity**', tex: '\nu = \mu/\rho'}
+      - text: '**Newton''s 2nd law for a fluid parcel.** 4 equations, 4 unknowns. Pressure has no evolution equation – it is the Lagrange multiplier enforcing incompressibility.'
+
+  - cols: [1, 1]
+    cards:
+      - title: Index form & derivatives
+        dot: amber
+        math_size: 1.28
+        blocks:
+          - math:
+              - '\partial_t u_i + u_j\,\partial_j u_i = -\tfrac{1}{\rho}\partial_i p + \nu\,\partial_j\partial_j u_i + f_i'
+              - '\frac{D\mathbf{u}}{Dt} = \partial_t\mathbf{u} + (\mathbf{u}\cdot\nabla)\mathbf{u}'
+              - '(\mathbf{u}\cdot\nabla)\mathbf{u} = \nabla\tfrac{|\mathbf{u}|^2}{2} - \mathbf{u}\times\boldsymbol{\omega}'
+          - text: '(u·∇)u is the directional derivative of u along u – **not** a curl. It is the only nonlinearity.'
+      - title: Vorticity
+        aside: 'ω = ∇×u'
+        dot: rose
+        math_size: 1.28
+        blocks:
+          - math: '\frac{D\boldsymbol{\omega}}{Dt} = \underbrace{(\boldsymbol{\omega}\cdot\nabla)\mathbf{u}}_{\color{#ef7a8a}\text{vortex stretching}} + \nu\,\Delta\boldsymbol{\omega} + \nabla\times\mathbf{f}'
+          - text: 'Stretching amplifies vorticity – the engine of possible blow-up. **It vanishes identically in 2D**, which is why 2D is globally smooth.'
+          - math: '\text{BKM: blow-up at } T^* \iff \int_0^{T^*}\!\|\boldsymbol{\omega}\|_{L^\infty}dt=\infty'
+
+  - cols: [1, 1]
+    cards:
+      - title: Pressure · energy · scaling
+        dot: cyan
+        math_size: 1.2
+        blocks:
+          - math:
+              - '-\Delta p = \rho\,\partial_i u_j\,\partial_j u_i \quad (\mathbf{f}=0)'
+              - '\tfrac{1}{2}\tfrac{d}{dt}\!\int\!|\mathbf{u}|^2 = -\nu\!\int\!|\nabla\mathbf{u}|^2'
+              - '\mathbf{u}_\lambda = \lambda\,\mathbf{u}(\lambda x,\lambda^2 t),\quad \mathrm{Re}=\tfrac{UL}{\nu}'
+          - text: 'Energy scales as λ^{−1} → 3D is **supercritical**: energy control is too weak at small scales.'
+      - title: Relatives & 3D regularity
+        dot: green
+        blocks:
+          - table:
+              compact: true
+              bold_first: false
+              head: [System, Change, Smoothness]
+              rows:
+                - [Stokes, 'drop (u·∇)u', '[[ok: linear · solved]]']
+                - ['Navier–Stokes 2D', 'no stretching*', '[[ok: global · 1959]]']
+                - [Euler, 'ν = 0', '[[bad: blow-up, forced]]']
+                - ['Navier–Stokes 3D', '–', '[[open: see below]]']
+                - ['Compressible / MHD', 'ρ(x,t), B field\*\*', '[[open: open]]']
+          - text: '\* 2D: ω ⊥ plane, so (ω·∇)u = 0. Vortices can’t self-amplify.
+
+              \*\* Compressible: ρ varies, shocks (Ma ≳ 0.3). MHD: + force J×B.'
+            size: 0.84
+            mt: -2
+
+  - title: 'Millennium Prize (Clay, 2000) · prove any one of A–D'
+    dot: rose
+    style: alert
+    blocks:
+      - table:
+          compact: true
+          head: [Option, Domain, Force, Statement]
+          widths: [8%, 12%, 22%]
+          rows:
+            - [A, 'ℝ³', 'f = 0', 'global smooth, finite-energy solution for every smooth decaying u₀']
+            - [B, '𝕋³', 'f = 0', 'same, periodic data']
+            - [C, 'ℝ³', 'smooth, decaying', 'for some u₀, f the smooth solution blows up in finite time']
+            - [D, '𝕋³', 'smooth, periodic', 'same, periodic data']
+      - text: '**Status, Oct 2026:** OpenAI (Sep 8, 2026) claims C and D – finite-time blow-up with smooth forcing, Lean-formalized; independent review ongoing, prize not awarded. Builds on Córdoba–Martínez-Zoroa; parallel forced-Euler blow-up by Alpöge–Buckmaster. **Still open: the unforced case (f = 0).**'
+        mt: 8
+
+footer:
+  left: 'Sources: Fefferman 2000 · OpenAI 2026 · Leray 1934 · Ladyzhenskaya 1959 · BKM 1984'

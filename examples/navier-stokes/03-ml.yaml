@@ -1,0 +1,114 @@
+number: 3
+title: Navier–Stokes
+accent: × Machine Learning
+subtitle: Physics-informed losses, neural operators, graph simulators, learned closures – and the hunt for blow-up
+
+rows:
+  - title: PINN
+    aside: 'physics-informed neural network – Raissi, Perdikaris, Karniadakis 2019'
+    style: hero
+    math_size: 1.08
+    blocks:
+      - columns:
+          widths: [0.9, 1.1]
+          gap: 18
+          items:
+            - - label: 'net (x, t) → (u, p) · residuals by autograd'
+                mt: 0
+              - math:
+                  - '\mathbf{r}_\theta = \partial_t\mathbf{u}_\theta + (\mathbf{u}_\theta\!\cdot\!\nabla)\mathbf{u}_\theta + \tfrac{1}{\rho}\nabla p_\theta - \nu\Delta\mathbf{u}_\theta,\quad r^{c}_\theta=\nabla\!\cdot\mathbf{u}_\theta'
+                  - '\mathcal{L}(\theta) = \underbrace{\tfrac{1}{N_r}\!\sum\!\big(|\mathbf{r}_\theta|^2 + |r^{c}_\theta|^2\big)}_{\color{#5cc8e8}\text{PDE residual}} + \lambda_b\,\mathcal{L}_{\text{BC}} + \lambda_0\,\mathcal{L}_{\text{IC}} + \lambda_d\,\mathcal{L}_{\text{data}}'
+              - bullets:
+                  - '**Div-free by design:** predict ψ, set u = ∂ᵧψ, v = −∂ₓψ'
+                  - '**Pitfalls:** spectral bias, loss imbalance, broken causality → adaptive λ, Fourier features, causal weighting'
+                  - '**Shines in** inverse problems: infer p or ν from sparse data'
+            - - code:
+                  lang: python
+                  font: 11.4
+                  src: |
+                    def grad(f, z):
+                        return torch.autograd.grad(f.sum(), z, create_graph=True)[0]
+                    xyt.requires_grad_()                 # collocation points
+                    u, v, p = net(xyt).unbind(-1)
+                    u_x, u_y, u_t = grad(u, xyt).unbind(-1)
+                    v_x, v_y, v_t = grad(v, xyt).unbind(-1)
+                    p_x, p_y, _   = grad(p, xyt).unbind(-1)
+                    lap = lambda f_x, f_y: grad(f_x, xyt)[:,0] + grad(f_y, xyt)[:,1]
+                    r_u = u_t + u*u_x + v*u_y + p_x/rho - nu*lap(u_x, u_y)
+                    r_v = v_t + u*v_x + v*v_y + p_y/rho - nu*lap(v_x, v_y)
+                    r_c = u_x + v_y                                # ∇·u = 0
+                    loss = (r_u**2 + r_v**2 + r_c**2).mean() + w_b*L_bc + w_0*L_ic
+
+  - cols: [1, 1]
+    cards:
+      - title: FNO
+        aside: 'Fourier Neural Operator – Li et al. 2021'
+        dot: amber
+        math_size: 1.0
+        blocks:
+          - text: 'Learns the solution **operator** G: a ↦ u, e.g. vorticity ω(·, 0) ↦ ω(·, T), not one solution.'
+            mt: 0
+          - math: 'v_{l+1}(x) = \sigma\Big(W v_l(x) + \mathcal{F}^{-1}\big[R_\phi\cdot\mathcal{F}v_l\big]_{|k|\le k_{\max}}\!(x)\Big)'
+          - bullets:
+              - '**Global** receptive field per layer via FFT, O(N log N)'
+              - '**Mesh-independent:** train at 64², evaluate at 256²'
+              - '2D NS: up to **~10³× faster** than a spectral solver'
+      - title: MeshGraphNets
+        aside: Pfaff et al. 2021
+        dot: green
+        plain_title: false
+        math_size: 1.0
+        blocks:
+          - text: 'Mesh → graph. Encode → **M** message-passing steps → decode the update, roll out in time.'
+            mt: 0
+          - math:
+              - "e'_{ij} = f_e(e_{ij}, v_i, v_j),\\qquad v'_i = f_v\\big(v_i,\\textstyle\\sum_j e'_{ij}\\big)"
+              - '\mathbf{u}^{n+1} = \mathbf{u}^{n} + \Delta t\cdot \text{dec}\big(\mathrm{GNN}^{M}(\mathbf{u}^n)\big)'
+          - bullets:
+              - '**Unstructured & adaptive** meshes, complex geometry'
+              - 'Training noise → stable rollouts; **10–100×** faster'
+
+  - cols: [1, 1]
+    cards:
+      - title: Learned turbulence closure
+        dot: cyan
+        math_size: 1.0
+        blocks:
+          - text: 'RANS/LES leave an unknown stress τ_{ij} = ⟨u′_{i}u′_{j}⟩. Classic: eddy viscosity. ML: learn it, keep invariance.'
+            mt: 0
+          - math:
+              - '\tau_{ij}-\tfrac{2}{3}k\,\delta_{ij} = -2\nu_t \bar S_{ij},\qquad \nu_t^{\text{Smag}}=(C_s\Delta)^2|\bar S|'
+              - '\text{TBNN: } b_{ij} = \sum_{n=1}^{10} g^{(n)}_\theta(\lambda_1,\dots,\lambda_5)\,T^{(n)}_{ij}'
+          - text: '**Ling et al. 2016:** Galilean invariance by construction. **Kochkov et al. 2021:** NN inside a differentiable solver → 8–10× coarser grid, 40–80× speed-up.'
+      - title: PINNs hunting blow-up
+        aside: 'links to #1'
+        dot: rose
+        style: alert
+        math_size: 1.0
+        blocks:
+          - text: 'Self-similar ansatz turns blow-up into a **steady** PDE for profile Φ with unknown rate λ:'
+            mt: 0
+          - math: '\phi(x,t) = (1-t)^{k(\lambda)}\,\Phi(y),\quad y=\frac{x}{(1-t)^{1+\lambda}}\;\Rightarrow\;\mathcal{E}(\Phi,\lambda)=0'
+          - bullets:
+              - '**Train Φ_{θ} and λ jointly**, symmetry built into the network'
+              - '**Gauss–Newton** + multi-stage nets → residual down to 10^{−13}'
+              - 'Then a **computer-assisted proof** around the candidate'
+              - '**2025:** unstable singularities for CCF, IPM, Boussinesq – with a law for rate vs instability order n:'
+          - math: '\lambda_n \approx 1 + \frac{1}{1.4187\,n + 1.0863}\quad(\text{Boussinesq, empirical})'
+
+  - title: Which tool when
+    dot: amber
+    blocks:
+      - table:
+          compact: true
+          head: [Approach, Learns, Training data, Generalizes to, Best for]
+          widths: [17%, 20%, 17%, 21%]
+          rows:
+            - [PINN, 'one solution u(x, t)', none / sparse, retrain per case, inverse problems]
+            - [FNO, 'operator a ↦ u', many solver runs, 'new ICs, params', 'fast surrogates, regular grids']
+            - [MeshGraphNets, time-stepper on a graph, solver trajectories, new geometries & meshes, 'complex geometry, design loops']
+            - [Learned closure, unresolved stress τ, DNS / LES fields, similar flow classes, cheaper RANS / LES]
+            - [Profile PINN, 'self-similar Φ, λ', none, '–', blow-up candidates]
+
+footer:
+  left: 'Refs: Raissi 2019 · Li 2021 · Pfaff 2021 · Ling 2016 · Kochkov 2021 · Wang et al. 2025'

@@ -1,0 +1,38 @@
+title: NoRMA
+accent: cheat sheets from YAML
+subtitle: 'KaTeX math · highlighted code · SVG figures · layout checks → JPG for LinkedIn + PDF carousel'
+header_gap: 14
+
+rows:
+  - cols: [0.82, 1.18]
+    cards:
+      - title: YAML in
+        dot: amber
+        blocks:
+          - code:
+              lang: yaml
+              font: 12.4
+              src: |
+                - title: Vorticity
+                  aside: 'ω = ∇×u'
+                  blocks:
+                    - math: '\frac{D\omega}{Dt} = (\omega\cdot\nabla)u
+                               + \nu\Delta\omega'
+                    - text: 'Stretching drives **blow-up**.'
+                    - figure: kolmogorov_spectrum
+                    - code: {lang: cuda, src: ...}
+          - chips: ['pip install normasheets', 'normasheets build']
+          - checklist:
+              columns: 2
+              items: [KaTeX math, SVG figures, highlighted code, overflow checks, 'JPG 4:5 feed', PDF carousel]
+            mt: 2
+      - title: Sheet out
+        aside: 2160×2700 JPG · PDF carousel
+        dot: cyan
+        pad: '14px 18px 4px'
+        blocks:
+          - figure: {name: sheet_fan}
+
+footer:
+  left: 'Python · KaTeX · Playwright · MIT'
+  right: 'Example: 9-sheet Navier–Stokes series'

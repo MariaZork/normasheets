@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "normasheets"
+version = "0.1.0"
+description = "NoRMA (Notes Rendered as Math Artwork): turn YAML into LinkedIn-ready math cheat sheets with KaTeX, code highlighting and SVG figures. Exports 4:5 JPG and a PDF carousel, with automatic layout checks."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Maria Zorkaltseva" }]
+license = { text = "MIT" }
+keywords = [
+  "cheat-sheet", "cheatsheet-generator", "infographic", "katex", "latex", "math",
+  "linkedin", "carousel", "yaml", "playwright", "pdf", "svg", "education", "scientific-visualization",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Education",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Topic :: Text Processing :: Markup",
+]
+dependencies = [
+  "pyyaml>=6",
+  "jinja2>=3.1",
+  "pygments>=2.15",
+  "playwright>=1.40",
+  "pypdf>=4",
+  "pillow>=10",
+]
+
+[project.urls]
+Homepage = "https://github.com/mariazork/normasheets"
+Repository = "https://github.com/mariazork/normasheets"
+Issues = "https://github.com/mariazork/normasheets/issues"
+Changelog = "https://github.com/mariazork/normasheets/blob/main/CHANGELOG.md"
+Gallery = "https://github.com/mariazork/normasheets#gallery"
+
+[project.scripts]
+normasheets = "normasheets.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["normasheets*"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"*" = ["*"]

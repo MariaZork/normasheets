@@ -1,0 +1,14 @@
+# Series settings shared by every sheet in this folder.
+series: {SERIES}
+author: {AUTHOR}
+kicker: "Cheat sheet · {series}"        # {series}, {author}, {number} are filled in
+byline: "Prepared by **{author}**"
+size: {width: 1080, height: 1350, scale: 2}   # 4:5 LinkedIn feed; scale 2 -> 2160x2700 JPG
+jpg_quality: 93
+output: out
+pdf: series.pdf                           # all sheets in one PDF = LinkedIn document carousel
+lint:
+  forbid: ["—"]                           # strings that must not appear (e.g. em dash)
+# credit: false                         # hide the "made with NoRMA" footer credit
+# palette: {amber: "#ffb000"}             # override theme colours
+# macros: {"\\R": "\\mathbb{R}"}          # KaTeX macros

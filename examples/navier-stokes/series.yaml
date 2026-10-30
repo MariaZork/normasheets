@@ -1,0 +1,10 @@
+series: Navier–Stokes series
+author: Maria Zorkaltseva
+kicker: "Cheat sheet · {series}"
+byline: "Prepared by **{author}**"
+size: {width: 1080, height: 1350, scale: 2}
+jpg_quality: 93
+output: out
+pdf: navier-stokes-series.pdf
+lint:
+  forbid: ["—"]

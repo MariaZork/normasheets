@@ -1,0 +1,139 @@
+/* NoRMA · dark theme. Colours are CSS variables; override them in series.yaml -> palette. */
+@font-face{font-family:'Inter';font-weight:400;src:url('ASSETS/fonts/Inter-Regular.otf')}
+@font-face{font-family:'Inter';font-weight:500;src:url('ASSETS/fonts/Inter-Medium.otf')}
+@font-face{font-family:'Inter';font-weight:600;src:url('ASSETS/fonts/Inter-SemiBold.otf')}
+@font-face{font-family:'Inter';font-weight:700;src:url('ASSETS/fonts/Inter-Bold.otf')}
+@font-face{font-family:'Inter';font-weight:800;src:url('ASSETS/fonts/Inter-ExtraBold.otf')}
+@font-face{font-family:'Inter Display';font-weight:700;src:url('ASSETS/fonts/InterDisplay-Bold.otf')}
+@font-face{font-family:'Inter Display';font-weight:800;src:url('ASSETS/fonts/InterDisplay-ExtraBold.otf')}
+@font-face{font-family:'Sheet Mono';src:url('ASSETS/fonts/DejaVuSansMono.ttf')}
+
+:root{
+  --bg:#0c1320; --card:#121c2e; --line:#22314b; --line2:#2f4a72; --ink:#e8eef8; --muted:#8fa1bd; --faint:#62738f;
+  --cyan:#5cc8e8; --amber:#f2b45a; --rose:#ef7a8a; --green:#7ed6a5;
+  --glow1:#1a2d4f; --glow2:#0f2a30; --code-bg:#0a111d; --tile-bg:#0e1626;
+}
+@page{margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:var(--W);height:var(--H);background:var(--bg);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Inter',sans-serif;color:var(--ink);padding:44px 46px 36px;position:relative;overflow:hidden;
+  background:radial-gradient(1200px 600px at 85% -10%,var(--glow1) 0%,transparent 60%),
+             radial-gradient(900px 500px at -10% 110%,var(--glow2) 0%,transparent 55%),var(--bg)}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(#ffffff06 1px,transparent 1px),linear-gradient(90deg,#ffffff06 1px,transparent 1px);background-size:36px 36px;pointer-events:none}
+
+/* header & footer */
+header{position:relative;margin-bottom:18px}
+.topline{display:flex;justify-content:space-between;align-items:center}
+.kl{display:flex;align-items:center;gap:12px}
+.logo{height:34px;width:auto;border-radius:8px;display:block}
+.num{font-family:'Inter Display','Inter',sans-serif;font-weight:800;font-size:22px;line-height:1;color:var(--bg);background:var(--amber);border-radius:9px;padding:5px 10px 4px}
+.kicker{font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:600}
+.byline{font-size:15px;color:var(--muted);padding:6px 14px;border:1px solid var(--line2);border-radius:999px;background:#5cc8e812}
+.byline b{color:var(--ink);font-weight:700}
+h1{font-family:'Inter Display','Inter',sans-serif;font-size:60px;line-height:1.02;font-weight:800;letter-spacing:-.02em;margin-top:8px}
+h1 span{color:var(--amber)}
+.sub{color:var(--muted);font-size:18px;margin-top:8px}
+footer{position:absolute;left:46px;right:46px;bottom:26px;display:flex;justify-content:space-between;align-items:center;gap:24px;color:var(--faint);font-size:12px;white-space:nowrap}
+footer .fr{display:flex;align-items:center;gap:14px}
+footer .credit{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+footer .credit b{color:var(--ink);font-weight:700}
+footer .credit img{height:14px;width:14px;border-radius:3px}
+
+/* grid */
+.row{display:grid;gap:14px;margin-top:14px}
+.row:first-of-type{margin-top:0}
+
+/* cards */
+.card{position:relative;background:linear-gradient(180deg,#131e30,#111a2c);border:1px solid var(--line);border-radius:16px;padding:17px 22px;min-width:0}
+.card h2{font-size:14px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.card h2 .dot{display:inline-block;flex:none;width:8px;height:8px;border-radius:50%}
+.card h2 .aside{text-transform:none;letter-spacing:.02em;color:var(--muted);font-weight:600}
+.card h2 .plain{text-transform:none;letter-spacing:.04em}
+.card.hero{border-color:var(--line2);box-shadow:0 0 0 1px #5cc8e81f inset,0 20px 60px -30px #5cc8e855}
+.card.alert{border-color:#5a3340;background:linear-gradient(180deg,#1c1a28,#121c2e)}
+@media print{.card.hero{box-shadow:0 0 0 1px #1f3550 inset}}
+
+/* text */
+.note{color:var(--muted);font-size:15px;line-height:1.42;margin-top:6px}
+.note b,.bullets b,.steps b,.checklist b{color:var(--ink);font-weight:600}
+.card.dense .note{font-size:13.6px}
+.sublabel{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
+code{font-family:'Sheet Mono',monospace;font-size:.88em;color:var(--ink);background:#ffffff0d;border-radius:4px;padding:0 4px}
+sub,sup{font-size:.72em;line-height:0}
+
+/* math (KaTeX) */
+.tex{color:var(--ink)}
+.tex[data-display="true"]{display:block}
+.katex{color:var(--ink)}
+.tex .katex{font-size:calc(var(--ms,1.1)*1em)}
+.katex-display{margin:5px 0}
+.note .tex .katex,.bullets .tex .katex,.kv .tex .katex,td .tex .katex{font-size:1.02em}
+
+/* labelled main equation + formula boxes */
+.eqrow{display:grid;align-items:center;gap:8px}
+.eqlab{font-size:12.5px;color:var(--muted);line-height:1.35;border-left:3px solid var(--cyan);padding-left:10px}
+.eqlab b{display:block;color:var(--ink);font-size:14px;font-weight:700;margin-bottom:2px}
+.boxes{display:grid;gap:12px;margin-top:6px}
+.box{background:var(--tile-bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px 2px;text-align:center}
+.boxlab{font-size:12.5px;color:var(--muted)} .boxlab b{color:var(--ink);font-weight:700}
+.box .tex .katex{font-size:1.45em}
+.named{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center}
+.named .nm{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.named .katex-display{margin:2px 0;text-align:left}
+.named .katex-display>.katex{text-align:left}
+
+/* lists */
+.bullets,.checklist{list-style:none;margin-top:4px}
+.bullets li{color:var(--muted);font-size:14px;line-height:1.36;padding:2px 0 2px 14px;position:relative}
+.bullets li:before{content:'';position:absolute;left:0;top:9.5px;width:5px;height:5px;border-radius:50%;background:var(--dot)}
+.checklist{column-gap:22px}
+.checklist li{break-inside:avoid;color:var(--muted);font-size:13.8px;line-height:1.36;padding:3px 0 3px 18px;position:relative}
+.checklist li:before{content:'✓';position:absolute;left:0;top:3px;color:var(--green);font-weight:800}
+.steps{list-style:none;counter-reset:s;margin-top:4px}
+.steps li{counter-increment:s;color:var(--muted);font-size:14px;line-height:1.36;padding:3px 0 3px 30px;position:relative}
+.steps li:before{content:counter(s);position:absolute;left:0;top:3px;width:20px;height:20px;border-radius:50%;background:var(--sc);color:var(--bg);font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:center}
+
+/* chips, tags, stats, kv */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
+.chip{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:#5cc8e81a;color:var(--cyan)}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.04em}
+.tag.ok{background:#7ed6a522;color:var(--green)} .tag.open{background:#f2b45a22;color:var(--amber)}
+.tag.bad{background:#ef7a8a22;color:var(--rose)} .tag.info{background:#5cc8e822;color:var(--cyan)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.stats{display:flex;gap:24px;margin:8px 0 2px}
+.big{font-family:'Inter Display','Inter',sans-serif;font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.big sup{font-size:.55em;line-height:0}
+.big small{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:6px}
+.kvgrid{display:grid;column-gap:18px;margin-top:2px}
+.kv{display:flex;gap:10px;align-items:baseline;font-size:14px;color:var(--muted);border-bottom:1px solid var(--line);padding:3px 0}
+.kv b{color:var(--ink);font-weight:700}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:5.5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+tr:last-child td{border-bottom:none}
+td b{font-weight:600}
+table.compact td,table.compact th{padding:3.5px 6px}
+.card.dense table{font-size:13.8px}
+
+/* code */
+pre.hl{font-family:'Sheet Mono',monospace;font-size:11.4px;line-height:1.5;color:#d6e2f5;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;white-space:pre;margin-top:4px;overflow:hidden}
+.hl .k,.hl .kd,.hl .kn,.hl .kr,.hl .kc,.hl .ow{color:var(--rose)}
+.hl .kt,.hl .mi,.hl .mf,.hl .il,.hl .m{color:var(--amber)}
+.hl .nf,.hl .nb,.hl .fm,.hl .bp,.hl .nt{color:var(--cyan)}
+.hl .s,.hl .s1,.hl .s2,.hl .sa,.hl .sc{color:var(--green)}
+.hl .c,.hl .c1,.hl .cm,.hl .cs,.hl .cp,.hl .cpf{color:var(--faint)}
+
+/* layout helpers */
+.columns{display:grid}
+.figure{margin:2px auto 0;width:100%}
+.figure svg{display:block;width:100%;height:auto}
+.figcap{color:var(--muted);font-size:12.5px;text-align:center;margin-top:2px}
+.tiles{display:grid;gap:12px;margin-top:4px}
+.tile{background:var(--tile-bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tile h3{font-size:15px;font-weight:700;display:flex;align-items:center;margin-bottom:2px}
+.tile .n{display:inline-flex;flex:none;width:24px;height:24px;border-radius:50%;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--bg);margin-right:8px}
+.tile .note{font-size:13.5px;margin-top:2px}
+.tile .tex .katex{font-size:calc(var(--ms,1.04)*1em)}
+.gk{text-transform:none}

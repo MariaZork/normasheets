@@ -1,0 +1,98 @@
+# One sheet = header + rows of cards + footer. Every block type is shown below.
+number: 1
+title: Gradient
+accent: Descent
+subtitle: The update rule, its variants, and how to choose a learning rate
+
+rows:
+  - title: The update                     # a row with one card can be written directly
+    aside: minimise a differentiable loss L(θ)
+    style: hero                           # hero | alert | (empty)
+    math_size: 1.5                        # formula scale inside this card
+    blocks:
+      - equation:
+          label: Update rule
+          sub: "one step of size η"
+          tex: '\theta_{t+1} = \theta_t - \underbrace{\eta}_{\color{#f2b45a}\text{learning rate}}\,\nabla_\theta L(\theta_t)'
+      - boxes:
+          - {label: "**Momentum**", tex: 'v \leftarrow \beta v + \nabla L'}
+          - {label: "**Adam** · 1st moment", tex: 'm \leftarrow \beta_1 m + (1-\beta_1) g'}
+          - {label: "**Weight decay**", tex: '\theta \leftarrow (1-\eta\lambda)\theta'}
+      - text: 'Inline math works too: for convex $L$ with $L$-smooth gradient, $\eta < 2/L$ guarantees descent.'
+
+  - cols: [1.1, 1]                        # relative column widths (numbers = fr, or "300px")
+    cards:
+      - title: Variants
+        dot: amber
+        blocks:
+          - table:
+              head: [Method, Uses, Typical η]
+              widths: [30%, 40%]
+              rows:
+                - [SGD, "gradient only", "0.1"]
+                - [Momentum, "velocity, β ≈ 0.9", "0.01–0.1"]
+                - [Adam, "1st + 2nd moments", "3·10^{-4}"]
+          - bullets: ["**Status tags:** [[ok: stable]] [[open: tune]] [[bad: diverges]]",
+                      "Sub/superscripts: x_{i}, e^{-λt}; code: `torch.optim.AdamW`"]
+      - title: In code
+        dot: cyan
+        blocks:
+          - code:
+              lang: python
+              src: |
+                for x, y in loader:
+                    loss = loss_fn(model(x), y)
+                    opt.zero_grad()
+                    loss.backward()          # ∇L
+                    opt.step()               # θ ← θ − η∇L
+          - chips: ["lr warm-up", "cosine decay", "grad clipping"]
+
+  - cols: [1, 1]
+    cards:
+      - title: Learning-rate sweep
+        aside: SVG from figures.py
+        dot: green
+        blocks:
+          - figure: {name: lr_curve, args: {best: 0.003}, max_width: 420}
+          - text: "Pick the largest η before the loss blows up."
+            align: center
+            size: 0.9
+      - title: Checklist
+        dot: rose
+        blocks:
+          - steps: {color: rose, items: ["Overfit one batch first", "Sweep η on a log grid", "Then tune schedule"]}
+          - stats:
+              - {value: "3·10^{-4}", unit: Adam, caption: "a safe first guess"}
+              - {value: "×10", unit: range, caption: "per sweep step"}
+
+  - cols: [1, 1.15]
+    cards:
+      - title: Notation
+        dot: cyan
+        dense: true
+        blocks:
+          - kvgrid:
+              columns: 1
+              key_width: 70
+              items:
+                - [θ, parameters]
+                - [η, learning rate]
+                - ["β_{1}, β_{2}", Adam moment decays]
+                - [λ, weight decay]
+                - [ε, Adam numerical floor]
+      - title: Two-step view
+        aside: tiles + named math
+        dot: amber
+        blocks:
+          - tiles:
+              - {title: Gradient, color: cyan, blocks: [{math: 'g = \nabla L'}]}
+              - {title: Step, color: amber, blocks: [{math: '\theta \mathrel{-}= \eta g'}]}
+          - named_math:
+              - {name: SGD, color: "#2f9cc4", tex: '\Delta\theta = -\eta g'}
+              - {name: Adam, color: "#c4566b", tex: '\Delta\theta = -\eta\,\hat m/(\sqrt{\hat v}+\epsilon)'}
+          - text: 'Same loop for every optimizer: only the step rule changes.'
+            mt: 4
+
+footer:
+  left: "Refs: Robbins & Monro 1951 · Kingma & Ba 2015"
+  right: "#{number} · {series}"           # the "made with NoRMA" credit follows it

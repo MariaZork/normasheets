@@ -1,0 +1,18 @@
+name: Bug report
+description: Something renders wrong or a command fails
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened
+      description: Include the `normasheets build` output and a screenshot of the sheet if relevant.
+    validations: {required: true}
+  - type: textarea
+    attributes:
+      label: Minimal YAML
+      description: The smallest sheet or block that reproduces it.
+      render: yaml
+  - type: input
+    attributes:
+      label: Versions
+      placeholder: "normasheets 0.1.0, Python 3.12, macOS 15"

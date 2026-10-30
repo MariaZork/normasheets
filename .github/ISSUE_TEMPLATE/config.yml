@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Show your cheat sheets
+    url: https://github.com/mariazork/normasheets/discussions
+    about: Share a series you built with NoRMA

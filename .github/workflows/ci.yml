@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-sheets:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install
+        run: |
+          pip install -e .
+          playwright install --with-deps chromium
+      - name: Build example series (fails on any layout error)
+        run: normasheets build examples/navier-stokes --strict
+      - name: Build social preview
+        run: normasheets build docs/brand --formats png --strict
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == '3.13'
+        with:
+          name: navier-stokes-sheets
+          path: |
+            examples/navier-stokes/out/*.jpg
+            examples/navier-stokes/out/*.pdf

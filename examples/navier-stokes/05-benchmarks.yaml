@@ -1,0 +1,106 @@
+number: 5
+title: Exact Solutions
+accent: '& Benchmarks'
+subtitle: Closed-form Navier–Stokes solutions and reference cases to verify and validate a CFD solver
+
+rows:
+  - cols: [1, 1, 1]
+    cards:
+      - title: Couette
+        aside: moving wall
+        math_size: 1.0
+        blocks:
+          - figure: couette
+          - math: 'u(y) = U\frac{y}{h} + \frac{G}{2\mu}\,y(h-y)'
+          - text: 'G = −dp/dx. With G = 0: linear profile, wall shear τ = μU/h. Exact on any grid.'
+            mt: 0
+      - title: Poiseuille
+        aside: pressure-driven
+        math_size: 1.0
+        blocks:
+          - figure: poiseuille
+          - math:
+              - '\text{channel: } u=\frac{G}{2\mu}y(h-y),\;\; \bar u = \tfrac23 u_{\max}'
+              - '\text{pipe: } u=\frac{G}{4\mu}(R^2-r^2),\;\; Q=\frac{\pi R^4 G}{8\mu}'
+          - text: 'Laminar friction: f = 64/Re (Darcy). Quadratic, so 2nd-order schemes are exact too.'
+            mt: 0
+      - title: Stokes
+        aside: moving plate
+        math_size: 0.86
+        blocks:
+          - figure: stokes_plate
+          - math:
+              - '\text{1st: } u = U\,\mathrm{erfc}\Big(\frac{y}{2\sqrt{\nu t}}\Big),\;\; \delta_{99}\approx 3.6\sqrt{\nu t}'
+              - '\text{2nd: } u = U e^{-y/\delta}\cos\!\big(\omega t - y/\delta\big),\;\; \delta=\sqrt{2\nu/\omega}'
+          - text: Tests the time integrator and diffusion.
+            mt: 0
+
+  - cols: [1, 1]
+    cards:
+      - title: Taylor–Green vortex
+        aside: 'periodic [0, 2π]², decaying'
+        dot: cyan
+        math_size: 1.0
+        blocks:
+          - math:
+              - 'u = \sin x\cos y\;F(t),\qquad v = -\cos x\sin y\;F(t)'
+              - 'p = \tfrac{\rho}{4}\big(\cos 2x + \cos 2y\big)F^2(t),\qquad F(t) = e^{-2\nu t}'
+          - text: 'Fully nonlinear yet exact: (u·∇)u is balanced by ∇p. Kinetic energy decays as e^{−4νt}.'
+            mt: 2
+          - bullets:
+              - '**2D:** the standard test for observed order of accuracy'
+              - '**3D at Re = 1600:** transition to turbulence; dissipation rate peaks near t ≈ 9 (DNS reference)'
+      - title: Blasius
+        aside: laminar flat-plate boundary layer
+        dot: amber
+        math_size: 1.0
+        blocks:
+          - columns:
+              widths: [1, 220px]
+              gap: 12
+              align: center
+              items:
+                - - math:
+                      - "f''' + \\tfrac12 f f'' = 0,\\quad \\eta = y\\sqrt{\\tfrac{U}{\\nu x}}"
+                      - "f(0)=f'(0)=0,\\;\\; f'(\\infty)=1"
+                      - "f''(0)=0.332"
+                      - '\delta_{99}\approx \frac{4.91\,x}{\sqrt{\mathrm{Re}_x}},\quad C_f = \frac{0.664}{\sqrt{\mathrm{Re}_x}}'
+                      - '\delta^* = \frac{1.721\,x}{\sqrt{\mathrm{Re}_x}},\quad \theta = \frac{0.664\,x}{\sqrt{\mathrm{Re}_x}}'
+                - - figure: blasius
+          - text: 'Profile solved here with RK4 shooting. Laminar up to Re_{x} ≈ 5·10⁵.'
+            mt: 2
+
+  - title: Validation benchmarks
+    aside: no closed form, trusted reference data
+    dot: rose
+    blocks:
+      - table:
+          compact: true
+          head: [Case, Re, Compare, Reference]
+          widths: [21%, 12%, 43%]
+          rows:
+            - [Lid-driven cavity, '100–10 000', 'centerline u, v; Re 1000 vortex center (0.53, 0.56)', 'Ghia, Ghia & Shin 1982']
+            - [Cylinder wake, '100', 'Strouhal St ≈ 0.16–0.17, drag C_{D} ≈ 1.3–1.4', Williamson 1996]
+            - [Backward-facing step, '100–800', 'reattachment length vs Re, recirculation zones', 'Armaly 1983; Gartling 1990']
+            - [3D Taylor–Green, '1600', kinetic energy and dissipation rate vs t, Brachet et al. 1983]
+            - [Turbulent channel, 'Re_{τ} = 180', 'u⁺(y⁺): u⁺ = y⁺, then u⁺ = ln(y⁺)/0.41 + 5.2', 'Kim, Moin & Moser 1987']
+
+  - cols: [1.1, 1]
+    cards:
+      - title: Method of manufactured solutions
+        dot: green
+        math_size: 1.0
+        blocks:
+          - text: 'No exact solution for your geometry? **Make one.** Pick any smooth u_{m}, p_{m}, compute the forcing that makes it exact, add it as a source term:'
+            mt: 0
+          - math: '\mathbf{f}_m = \partial_t\mathbf{u}_m + (\mathbf{u}_m\!\cdot\nabla)\mathbf{u}_m + \tfrac1\rho\nabla p_m - \nu\Delta\mathbf{u}_m'
+      - title: Observed order of accuracy
+        dot: green
+        math_size: 1.0
+        blocks:
+          - math: 'p_{\text{obs}} = \frac{\log\big(e_{h}/e_{h/2}\big)}{\log 2},\qquad e_h = \|\mathbf{u}_h - \mathbf{u}_{\text{exact}}\|'
+          - text: 'Refine the grid 3–4 times. p_{obs} must approach the formal order (2 for the scheme in #2), or there is a bug.'
+            mt: 0
+
+footer:
+  left: 'Refs: Schlichting, Boundary-Layer Theory · White, Viscous Fluid Flow · Roache 2002'
